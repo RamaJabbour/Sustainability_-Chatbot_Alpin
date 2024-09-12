@@ -1,0 +1,5 @@
+credentials:
+    - username: "admin@alpinme.com"
+      password_hash: "$2b$12$TSqmzGvdYjsGImqxkxf5HeLPunnelgwlFQs84c0q1fNPUC0kakb9u"
+    - username: "julian.shalash@alpinme.com"
+      password_hash: "$2b$12$DQPBsw30FQKa3STpPSaUsOs4h5LjiqsvxRpekFghXBOa5Y12h8Q5K"
