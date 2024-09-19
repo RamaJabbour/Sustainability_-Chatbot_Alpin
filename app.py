@@ -9,7 +9,7 @@ from backend import process_input
 import bcrypt
 import yaml
 from pydantic import BaseModel
-
+import asyncio
 
 # Load environment variables
 load_dotenv()
@@ -19,10 +19,10 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins, or restrict to specific origins in production
+    allow_origins=["*"],  # Allow all origins or limit to specific ones (your public URL)
     allow_credentials=True,
-    allow_methods=["*"],  # Allow all methods, including OPTIONS
-    allow_headers=["*"],  # Allow all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Load credentials from the YAML file
@@ -44,11 +44,21 @@ class ConnectionManager:
         await websocket.accept()
         self.active_connections.append(websocket)
         logging.debug(f"Connected: {websocket.client}")
+        asyncio.create_task(self.keep_alive(websocket))  # Start the keep-alive task
 
     def disconnect(self, websocket: WebSocket):
         if websocket in self.active_connections:
             self.active_connections.remove(websocket)
             logging.debug(f"Disconnected: {websocket.client}")
+        
+    async def keep_alive(self, websocket: WebSocket):
+        try:
+            while websocket in self.active_connections:
+                await websocket.send_text("")  # Send ping message to keep the connection alive
+                await asyncio.sleep(30)  # Ping every 30 seconds (adjust as needed)
+        except Exception as e:
+            logging.error(f"Keep-alive failed: {e}")
+            self.disconnect(websocket)
 
     async def send_personal_message(self, message: str, websocket: WebSocket):
         try:
@@ -60,7 +70,7 @@ class ConnectionManager:
 
 @app.get("/", response_class=HTMLResponse)
 async def get():
-    with open("bdc_hash.html", "r") as file:
+    with open("BDC4_eq1.html", "r") as file:
         html_content = file.read()
     return HTMLResponse(content=html_content)
 
@@ -76,10 +86,9 @@ def validate_login(login_data: LoginRequest):
             # Check if the password matches
             if bcrypt.checkpw(login_data.password.encode('utf-8'), user['password_hash'].encode('utf-8')):
                 return True
-    
-    # If no match found, raise an exception
-    raise HTTPException(status_code=401, detail="Invalid username or password")
-
+        # If no match found, raise an exception
+        raise HTTPException(status_code=401, detail="Invalid username or password")
+                        
 @app.post("/validate_login")
 async def validate_login_endpoint(login_data: LoginRequest):
     validate_login(login_data)
@@ -103,9 +112,3 @@ async def websocket_endpoint(websocket: WebSocket):
     except Exception as e:
         logging.error(f"Error in websocket endpoint: {e}")
         manager.disconnect(websocket)
-
-if __name__ == "__main__":
-    import nest_asyncio
-    import uvicorn
-    nest_asyncio.apply()
-    uvicorn.run(app, host="127.0.0.1", port=8000)
