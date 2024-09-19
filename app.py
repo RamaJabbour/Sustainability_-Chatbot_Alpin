@@ -19,7 +19,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins or limit to specific ones (your public URL)
+    allow_origins=["https://sustainability-chatbot-alpin.onrender.com"],  # Allow all origins or limit to specific ones (your public URL)
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
