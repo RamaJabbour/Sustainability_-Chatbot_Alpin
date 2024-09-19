@@ -70,7 +70,7 @@ class ConnectionManager:
 
 @app.get("/", response_class=HTMLResponse)
 async def get():
-    with open("BDC4_eq1.html", "r") as file:
+    with open("interface_secure.html", "r") as file:
         html_content = file.read()
     return HTMLResponse(content=html_content)
 
