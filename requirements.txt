@@ -4,3 +4,4 @@ python-dotenv
 openai
 bcrypt
 pyyaml
+asyncio
