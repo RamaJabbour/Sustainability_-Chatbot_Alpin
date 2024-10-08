@@ -153,7 +153,7 @@
     <script>
     let isLoggedIn = false;
 
-    const ws = new WebSocket("wss://sus-chatbot-project-2.onrender.com/ws");
+    const ws = new WebSocket("wss://sustainability-chatbot-alpin.onrender.com//ws");
 
     ws.onopen = function(event) {
         console.log("WebSocket connection established");
@@ -203,7 +203,7 @@
 
     console.log("Attempting to log in with username:", username); // Debugging line
 
-    fetch('https://sus-chatbot-project-2.onrender.com/validate_login', {
+    fetch('https://sustainability-chatbot-alpin.onrender.com//validate_login', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
