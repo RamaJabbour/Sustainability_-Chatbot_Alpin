@@ -3,27 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Sustainability Consultant</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         body {
- background-color: #C0C0C0; /* Silver white background color */
-
-
-
-            color: black; /* Change text color to black for readability */
+            background-color: #C0C0C0;
+            color: black;
             display: flex;
             flex-direction: column;
             height: 100vh;
             margin: 0;
             justify-content: center;
             align-items: center;
-            position: relative; /* Added to position the logo relative to the body */
+            position: relative;
         }
         #loginContainer, #chatContainer {
-    background-color: #C0C0C0; /* Silver white background color */
-
-
+            background-color: #C0C0C0;
             display: none;
             flex-direction: column;
             max-width: 800px;
@@ -31,33 +25,31 @@
             margin: auto;
             padding: 20px;
         }
-        /* Green and blue gradient container with padding and rounded corners */
         #loginBox, #chatBox {
-            background: #C0C0C0; /* Match the background with the page */
+            background: #C0C0C0;
             padding: 20px;
             border-radius: 10px;
-            box-shadow: none; /* Slight shadow for depth */
-            color: white; /* Ensure text inside the box is white */
+            box-shadow: none;
+            color: black;
         }
-#loginBox {
-    
-    margin-top: 10px; /* Adds space below the logo */
-    padding-top: 10px; /* Adds padding inside the login box */
-
-}
-
+        #loginBox {
+            margin-top: 10px;
+            padding-top: 10px;
+        }
         #messages {
             flex-grow: 1;
             overflow-y: auto;
             padding: 10px;
-            border: 1px solid #ccc;
-            background-color:white;
+            background-color: #C0C0C0; /* Match the background color */
             border-radius: 5px;
             margin-bottom: 10px;
-            max-height: 300px; /* Set a maximum height for the message area */
+            max-height: 300px;
+            border: none; /* Remove the border */
         }
         #messageInput {
-            flex: none;
+            display: flex;
+            align-items: center; /* Align the icon and input vertically */
+            margin-top: 10px;
         }
         .message {
             padding: 10px;
@@ -66,119 +58,164 @@
             width: fit-content;
             max-width: 70%;
             word-wrap: break-word;
+            color: black; /* Set text color to black */
         }
         .message.user {
-            background-color: #007bff;
+            background-color: #D3D3D3; /* Light ash color for user message */
             align-self: flex-end;
             color: black;
-            text-align:right;
+            text-align: right;
         }
         .message.bot {
-            background-color: white;
+            background-color: #C0C0C0; /* Match bot message background to overall background */
             align-self: flex-start;
             color: black;
-            text-align:left;
+            text-align: left;
         }
         #logoutButton {
+            color: black;
             position: absolute;
             top: 20px;
             right: 20px;
+            background-color: #C0C0C0;
+            border-radius: 30px; /* Rounded edges for the logout button */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 1); /* Dark grey shadow */
         }
- #logoWrapper {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 50px; /* Space between logo and username */
-}
 
-#logo {
-    width: 300px; /* Set a smaller width */
-    height: auto; /* Maintain the aspect ratio */
-}
+        #logoutButton:active, #logoutButton:focus {
+            background-color: red;
+        }
 
-
-        
-        /* Title Styles */
         #chatContainer h1 {
-            color: #ffffff; /* White color for the title to fit with the container */
-            text-shadow: 2px 2px #064635; /* Dark green shadow for the text */
-            margin-bottom: 50px; /* Add some space between title and chatbox */
+            color: #ffffff;
+            text-shadow: 2px 2px #064635;
+            margin-bottom: 50px;
         }
-        /* Adjust spacing */
-        #loginBox .form-group:first-of-type {
-            margin-bottom: 10px; /* Reduce the margin between username and password */
-        }
-        #loginBox .form-group:last-of-type {
-            margin-bottom: 20px; /* Increase the margin between password and login button */
-        }
-        /* Adjust the input fields and button to be smaller */
+
         #loginBox .form-control, #loginButton {
-            width: 65%; /* Make the input fields and button less wide */
+            width: 95%;
             margin-left: auto;
             margin-right: auto;
-            padding: 8px; /* Slightly smaller padding for a compact look */
-            font-size: 14px; /* Smaller font size */
-             background-color: white; /* Change background color to white */
-    color: black; /* Change text color to black for readability */
-    border: 1px solid #ccc; /* Add a border to match input fields */
+            padding: 8px;
+            font-size: 14px;
+            background-color: white;
+            color: black;
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 1); /* Dark grey shadow */
+            border-radius: 10px; /* Rounded edges */
         }
+
         #loginButton {
-    width: 65%; /* Ensure the login button matches the width of the input fields */
-    margin-left: auto;
-    margin-right: auto;
-    padding: 8px; /* Match padding to input fields */
-    font-size: 14px; /* Match font size to input fields */
-    background-color: white; /* Initial background color */
-    color: black; /* Initial text color */
-    border: 1px solid #ccc; /* Add a border to match input fields */
-    transition: background-color 0.3s ease; /* Smooth transition */
-}
+            width: 95%;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 8px;
+            font-size: 14px;
+            background-color: white;
+            color: black;
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, ); /* Dark grey shadow */
+            border-radius: 10px; /* Rounded edges */
+            transition: background-color 0.3s ease;
+        }
 
-#loginButton:active, #loginButton:focus {
-    background-color: #007bff; /* Blue when pressed or focused */
-    color: white; /* White text on blue background */
-}
+        #loginButton:active, #loginButton:focus {
+            background-color: black;
+            color: white;
+        }
 
+        .input-group {
+            position: relative; /* Ensures the eye icon is positioned inside the input field */
+        }
+
+        .input-group .eye-icon {
+            position: absolute;
+            right: 10px; /* Adjust this value based on padding */
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
+
+        .send-icon {
+            cursor: pointer;
+            padding-left: 10px; /* Adjust the padding between the icon and input */
+        }
+
+        #messageText {
+            width: 95%; /* Adjust width to fit with send icon */
+            height: 40px; /* Height adjustment */
+            resize: none;
+            border-radius: 10px; /* Rounded edges for the input */
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 1); /* Dark grey shadow */
+        }
+
+        #sendIcon {
+            width: 24px;  /* Smaller size for the send icon */
+            height: 24px;
+            cursor: pointer;  /* Makes the icon behave like a clickable button */
+            transition: transform 0.2s ease, box-shadow 0.2s ease; /* Add transition for box-shadow */
+        }
+
+        #sendIcon:hover {
+            transform: scale(1.1);  /* Slight zoom effect when hovering */
+        }
+
+        /* Add shine effect when active */
+        #sendIcon:active {
+            box-shadow: 0 0 15px white; /* White glow effect when pressed */
+        }
+
+        #eyeIcon {
+            width: 20px;  /* Smaller size for the eye icon */
+            height: 20px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        #eyeIcon:hover {
+            transform: scale(1.1);  /* Slight zoom effect when hovering */
+        }
     </style>
 </head>
 <body>
 
- 
 <div id="loginBox">
-    <!-- Logo Image -->
-    <div id="logoWrapper">
-        <img id="logo" src="https://solarabic.com/wp-content/uploads/2020/08/Alpin-Logo.png" alt="Alpin Limited">
-    </div>
-    <!-- Username and Password Fields -->
-    <div class="form-group mt-4">
-        <input type="text" id="usernameInput" class="form-control" placeholder="Username">
-    </div>
-    <div class="form-group">
-        <input type="password" id="passwordInput" class="form-control" placeholder="Password">
-    </div>
-    <button id="loginButton" class="btn btn-secondary btn-block" onclick="validateLogin()">Login</button>
+    <!-- Removed the logo section -->
+    <!-- Login Form -->
+    <form id="loginForm" onsubmit="return validateLogin();">
+        <div class="form-group mt-4">
+            <input type="text" id="usernameInput" class="form-control" placeholder="Username">
+        </div>
+        <div class="form-group input-group">
+            <input type="password" id="passwordInput" class="form-control" placeholder="Password">
+            <span class="eye-icon" onclick="togglePasswordVisibility()">
+                <img src="https://img.icons8.com/ios-filled/20/000000/visible.png" id="eyeIcon" alt="Toggle Visibility">
+            </span>
+        </div>
+        <button id="loginButton" class="btn btn-secondary btn-block" type="submit">Login</button>
+    </form>
 </div>
 
-
-    <!-- Chatbot Interface -->
-    <div id="chatContainer" class="container text-center">
-        <div id="chatBox">
-            <!-- Title for the ChatBot -->
-            <h1 class="text-center">Sustainability Consultant ChatBot</h1>
-            <button id="logoutButton" class="btn btn-danger" onclick="logout()">Logout</button>
-            <div id="messages"></div>
-            <div class="input-group mb-3" id="messageInput">
-                <textarea id="messageText" class="form-control" placeholder="Enter your sustainability question here..." aria-label="Message"></textarea>
-                <div class="input-group-append">
-                    <button class="btn btn-primary" type="button" onclick="sendMessage()">Send</button>
-                </div>
-            </div>
+<div id="chatContainer" class="container text-center">
+    <div id="chatBox">
+    
+        <button id="logoutButton" class="btn btn-danger" onclick="logout()">Logout</button>
+        <div id="messages"></div>
+        <!-- Send input and button -->
+        <div id="messageInput">
+            <textarea id="messageText" class="form-control" placeholder="Enter your question here..." aria-label="Message"></textarea>
+            <span class="send-icon" onclick="sendMessage()" id="sendIconWrapper">
+                <img src="https://img.icons8.com/ios-glyphs/30/000000/paper-plane.png" alt="Send" id="sendIcon">
+            </span>
         </div>
     </div>
+</div>
 
-    <script>
+<script>
     let isLoggedIn = false;
 
-    const ws = new WebSocket("ws://localhost:8000/ws");
+    const ws = new WebSocket("ws://localhost:8001/ws");
 
     ws.onopen = function(event) {
         console.log("WebSocket connection established");
@@ -186,7 +223,7 @@
 
     ws.onmessage = function(event) {
         const messages = document.getElementById('messages');
-        const message = document.createElement('div');
+        const message = document.createElement('pre');
         message.textContent = event.data;
         message.classList.add('message', 'bot');
         messages.appendChild(message);
@@ -222,83 +259,87 @@
         input.value = '';
     }
 
-    function validateLogin() {
-    const username = document.getElementById("usernameInput").value;
-    const password = document.getElementById("passwordInput").value;
-
-    console.log("Attempting to log in with username:", username); // Debugging line
-
-    fetch('http://localhost:8000/validate_login', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-    })
-    .then(response => {
-        console.log("Received response status:", response.status); // Debugging line
-        if (response.ok) {
-            return response.json();
-        } else {
-            return response.json().then(err => { throw err; });
+    document.getElementById('passwordInput').addEventListener('input', function() {
+        const eyeIcon = document.querySelector('.eye-icon');
+        if (this.value.length > 0) {
+            eyeIcon.style.display = 'block';
         }
-    })
-    .then(data => {
-        console.log("Received response data:", data); // Debugging line
-        if (data.success) {
-            isLoggedIn = true;
-            document.getElementById('loginBox').style.display = 'none';
-            document.getElementById('chatContainer').style.display = 'flex';
-            alert(data.message);
-        }
-    })
-    .catch((error) => {
-        console.error("Login error:", error); // Debugging line
-        alert(error.detail || "Incorrect username or password. Please try again.");
     });
-}
+
+  document.getElementById("messageText").addEventListener("keypress", function(event) {     
+     if (event.key === "Enter" && !event.shiftKey) {  // Only Enter without Shift sends the message                                    event.preventDefault();  // Prevent adding a new line 
+          sendMessage(); // Send the message 
+      }
+});
+
+    function validateLogin() {
+        const username = document.getElementById("usernameInput").value;
+        const password = document.getElementById("passwordInput").value;
+
+        console.log("Attempting to log in with username:", username);
+
+        fetch('http://localhost:8001/validate_login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ username, password }),
+        })
+        .then(response => {
+            console.log("Received response status:", response.status);
+            if (response.ok) {
+                return response.json();
+            } else {
+                return response.json().then(err => { throw err; });
+            }
+        })
+        .then(data => {
+            console.log("Received response data:", data);
+            if (data.success) {
+                isLoggedIn = true;
+                document.getElementById('loginBox').style.display = 'none';
+                document.getElementById('chatContainer').style.display = 'flex';
+                alert(data.message);
+            }
+        })
+        .catch((error) => {
+            console.error("Login error:", error);
+            alert(error.detail || "Incorrect username or password. Please try again.");
+        });
+
+        return false;
+    }
 
     function logout() {
         const confirmation = confirm("Are you sure you want to logout?");
+        
         if (confirmation) {
             isLoggedIn = false;
-            document.getElementById('usernameInput').value = ''; // Clear the username field
-            document.getElementById('passwordInput').value = ''; // Clear the password field
-            document.getElementById('loginContainer').style.display = 'flex';
+            document.getElementById('usernameInput').value = ''; 
+            document.getElementById('passwordInput').value = ''; 
+            document.getElementById('loginBox').style.display = 'flex';
             document.getElementById('chatContainer').style.display = 'none';
+            window.scrollTo(0, 0);
             alert("You have been logged out.");
         } else {
-            // If the user cancels, do nothing
             return;
         }
     }
 
-    // Initially show login form
-    document.getElementById('loginContainer').style.display = 'flex';
-    // Listen for Enter key presses in the username and password input fields
-document.getElementById("usernameInput").addEventListener('keypress', function(event) {
-    if (event.key === "Enter") {
-        event.preventDefault();  // Prevent the default action
-        validateLogin();  // Call the login function
-    }
-});
-
-document.getElementById("passwordInput").addEventListener('keypress', function(event) {
-    if (event.key === "Enter") {
-        event.preventDefault();  // Prevent the default action
-        validateLogin();  // Call the login function
-    }
-});
-
-
-    // Listen for Enter key presses
-    document.getElementById("messageText").addEventListener('keypress', function(event) {
-        if (event.key === "Enter") {
-            event.preventDefault();  // Prevent the default action to stop from creating a new line
-            sendMessage();
-
+    function togglePasswordVisibility() {
+        const passwordInput = document.getElementById('passwordInput');
+        const eyeIcon = document.getElementById('eyeIcon');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            eyeIcon.src = 'https://img.icons8.com/ios-filled/20/000000/invisible.png'; 
+        } else {
+            passwordInput.type = 'password';
+            eyeIcon.src = 'https://img.icons8.com/ios-filled/20/000000/visible.png'; 
         }
-    });
+    }
+
 </script>
+
 </body>
-</html> 
+</html>
