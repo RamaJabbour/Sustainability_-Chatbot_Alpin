@@ -1,114 +1,159 @@
 import logging
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Depends
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.responses import HTMLResponse
-from fastapi.middleware.cors import CORSMiddleware  # Import CORS middleware
-import os
-import openai
-from dotenv import load_dotenv
-from backend import process_input
-import bcrypt
-import yaml
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from LLM import handle_response, memory, prompt
+import yaml
+import bcrypt
+from langchain.schema import HumanMessage
 import asyncio
 
-# Load environment variables
-load_dotenv()
+# Initialize FastAPI app
 app = FastAPI()
 
 # Enable CORS
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://sustainability-chatbot-alpin.onrender.com"],  # Allow all origins or limit to specific ones (your public URL)
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Load credentials from the YAML file
+logging.basicConfig(level=logging.DEBUG)
+
 def load_credentials():
-    with open('config_users.yml', 'r') as file:
+    with open("config_users1.yml", "r") as file:
         config = yaml.safe_load(file)
-        return config['credentials']
+        return config["credentials"]
 
 credentials = load_credentials()
-# Configure logging
-logging.basicConfig(level=logging.DEBUG)
-openai.api_key = os.getenv('OPENAI_API_KEY')  # Load API Key from environment
 
 class ConnectionManager:
     def __init__(self):
-        self.active_connections = []
+        self.active_connections: dict[WebSocket, dict] = {}
 
     async def connect(self, websocket: WebSocket):
         await websocket.accept()
-        self.active_connections.append(websocket)
-        logging.debug(f"Connected: {websocket.client}")
-        asyncio.create_task(self.keep_alive(websocket))  # Start the keep-alive task
+        self.active_connections[websocket] = {"history": "", "buffer": ""}
+        logging.info(f"WebSocket connected: {websocket.client}")
+
 
     def disconnect(self, websocket: WebSocket):
         if websocket in self.active_connections:
-            self.active_connections.remove(websocket)
-            logging.debug(f"Disconnected: {websocket.client}")
-        
-    async def keep_alive(self, websocket: WebSocket):
-        try:
-            while websocket in self.active_connections:
-                await websocket.send_text("")  # Send ping message to keep the connection alive
-                await asyncio.sleep(30)  # Ping every 30 seconds (adjust as needed)
-        except Exception as e:
-            logging.error(f"Keep-alive failed: {e}")
-            self.disconnect(websocket)
+            del self.active_connections[websocket]
+            logging.info(f"WebSocket disconnected: {websocket.client}")
 
-    async def send_personal_message(self, message: str, websocket: WebSocket):
+
+    async def send_message(self, websocket: WebSocket, message: str):
         try:
-            logging.debug(f"Sending message to {websocket.client}: {message}")
             await websocket.send_text(message)
         except Exception as e:
             logging.error(f"Failed to send message: {e}")
             self.disconnect(websocket)
 
-@app.get("/", response_class=HTMLResponse)
-async def get():
-    with open("interface_secure.html", "r") as file:
-        html_content = file.read()
-    return HTMLResponse(content=html_content)
+    async def send_buffered_message(self, websocket: WebSocket):
+        """Send the buffered message if the buffer is not empty."""
+        if websocket in self.active_connections:
+            buffer = self.active_connections[websocket].get("buffer", "")
+            if buffer:
+                await self.send_message(websocket, buffer)
+                self.active_connections[websocket]["buffer"] = ""  # Clear the buffer
+
+    
+    def get_history(self, websocket: WebSocket):
+        return self.active_connections.get(websocket, {}).get("history", "")
+
+    def update_history(self, websocket: WebSocket, user_input: str, bot_response: str):
+        if websocket in self.active_connections:
+            history = self.active_connections[websocket]["history"]
+            updated_history = f"{history}\nUser: {user_input}\nAssistant: {bot_response}"
+            self.active_connections[websocket]["history"] = updated_history
+            
+    def reset_buffer(self, websocket: WebSocket):
+        """Reset the temporary buffer for the current response."""
+        if websocket in self.active_connections:
+            self.active_connections[websocket]["buffer"] = ""
+
+manager = ConnectionManager()
 
 class LoginRequest(BaseModel):
     username: str
     password: str
 
-def validate_login(login_data: LoginRequest):
-    # Iterate over each user in the credentials list
-    for user in credentials:
-        # Check if the username matches
-        if login_data.username == user['username']:
-            # Check if the password matches
-            if bcrypt.checkpw(login_data.password.encode('utf-8'), user['password_hash'].encode('utf-8')):
-                return True
-        # If no match found, raise an exception
-        raise HTTPException(status_code=401, detail="Invalid username or password")
-                        
 @app.post("/validate_login")
-async def validate_login_endpoint(login_data: LoginRequest):
-    validate_login(login_data)
-    return {"success": True, "message": "Login successful"}
+async def validate_login(data: LoginRequest):
+    for user in credentials:
+        if data.username == user["username"]:
+            if bcrypt.checkpw(data.password.encode("utf-8"), user["password_hash"].encode("utf-8")):
+                return {"success": True, "message": "Login successful"}
+    raise HTTPException(status_code=401, detail="Invalid username or password")
+
+@app.get("/", response_class=HTMLResponse)
+async def serve_html():
+    try:
+        with open("interface-stream.html", "r") as file:
+            html_content = file.read()
+        return HTMLResponse(content=html_content)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="HTML file not found")
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
-    manager = ConnectionManager()
     await manager.connect(websocket)
+
     try:
         while True:
+            # Receive user input
             data = await websocket.receive_text()
-            logging.debug(f"Received message: {data}")
-            # Normalize case for all processing
-            normalized_data = data.lower()
-            response = process_input(normalized_data)  # Call the function from backend.py
-            logging.debug(f"Response: {response}")
-            await manager.send_personal_message(response, websocket)
+            logging.debug(f"[WebSocket] Received message from client: {data}")
+
+            # Retrieve conversation history
+            history = manager.get_history(websocket)
+
+            # Build the prompt for the model
+            formatted_prompt = prompt.format(
+                history=history,
+                query=data
+            )
+
+            inputs = {
+                "query": data,
+                "formatted_prompt": formatted_prompt
+            }
+
+            try:
+                # Process the response (streaming or non-streaming)
+                response = await handle_response(inputs)
+                accumulated_text = ""  # Reset the buffer for this response
+
+                if hasattr(response, '__aiter__'):  # Streaming response
+                    async for chunk in response:
+                        content = chunk.get("content", "") if isinstance(chunk, dict) else chunk
+                        if content:
+                            # Accumulate the current response chunk
+                            accumulated_text += content
+
+                            # Store the chunk in the buffer (optional for retries)
+                            manager.active_connections[websocket]["buffer"] += content
+
+                            # Send the new chunk to the client
+                            await manager.send_message(websocket, content)
+
+                    # Update the full conversation history
+                    manager.update_history(websocket, data, accumulated_text)
+
+                else:  # Non-streaming response
+                    bot_response = response.get("response", "Error: No response generated")
+                    await manager.send_message(websocket, bot_response)
+                    manager.update_history(websocket, data, bot_response)
+
+            except Exception as e:
+                error_message = f"Error processing query: {e}"
+                logging.error(f"[WebSocket] {error_message}")
+                await manager.send_message(websocket, error_message)
+
     except WebSocketDisconnect:
-        manager.disconnect(websocket)
-    except Exception as e:
-        logging.error(f"Error in websocket endpoint: {e}")
+        logging.info(f"[WebSocket] Client disconnected: {websocket.client}")
         manager.disconnect(websocket)
